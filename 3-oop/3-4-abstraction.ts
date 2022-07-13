@@ -18,17 +18,15 @@
     hasMilk: boolean;
   };
 
-  /**
-   * 외부에서 사용하는 이름
-   */
+  //외부에서 사용하는 이름
   interface CoffeeMaker {
+    //fillCoffeeBeans(coffeeBeans: number);
     makeCoffee(shots: number): CoffeeCup;
   }
 
-  //커피기계
+  //커피기계. 구현하는 클래스 ex) CoffeeMakerImpl
   class CoffeeMachine implements CoffeeMaker {
     private static BEANS_GRAM_PER_SHOT = 7; //커피 한잔을 만드는 데 필요한 커피콩(g)
-    private static MILK_LITER_PER_CUP = 0.35; //커피 한잔을 만드는 데 필요한 우유(l)
 
     private coffeeBeans: number = 0;
     private milk: number = 0;
@@ -38,10 +36,9 @@
       this.milk = milk;
     }
 
-    //커피머신을 만드는 함수.
+    //커피머신을 만드는 함수
     static makeCoffeeMachine(coffeeBeans: number, milk: number) {
       if (coffeeBeans < 0) throw new Error(`커피콩은 0보다 커야합니다.(입력 : ${coffeeBeans})`);
-      if (milk < 0) throw new Error(`우유는 0보다 커야합니다.(입력 : ${milk})`);
       return new CoffeeMachine(coffeeBeans, milk);
     }
 
@@ -52,32 +49,35 @@
       console.log(`커피 콩이 채워졌습니다.(잔여 : ${this.coffeeBeans})`);
     }
 
-    //우유를 채워준다.
-    fillMilk(milk: number) {
-      if (milk < 0) throw new Error(`우유는 0보다 커야합니다.(입력 : ${milk})`);
-      this.milk += milk;
-      console.log(`우유가 채워졌습니다.(잔여 : ${this.milk})`);
-    }
+    private grindBeans(shots: number) {
+      if (shots < 1) throw new Error(`${shots}샷은 0보다 커야합니다.`);
+      if (this.coffeeBeans < CoffeeMachine.BEANS_GRAM_PER_SHOT * shots) throw new Error('커피콩이 부족합니다.');
 
+      this.coffeeBeans -= CoffeeMachine.BEANS_GRAM_PER_SHOT * shots;
+
+      console.log('커피 가는중...');
+    }
+    private preheat() {
+      console.log('기계를 데우는 중...🔥');
+    }
+    private extract(shots: number): CoffeeCup {
+      console.log('커피를 추출하는 중...');
+      return { shots, hasMilk: false };
+    }
     //커피를 만드는 함수
-    makeCoffe(shots: number, isMilk: boolean): CoffeeCup {
+    makeCoffee(shots: number): CoffeeCup {
       this.grindBeans(shots);
       this.preheat();
       return this.extract(shots);
-      /*
-      if (shots < 1) throw new Error(`${shots}샷은 0보다 커야합니다.`);
-      if (this.coffeeBeans < CoffeeMachine.BEANS_GRAM_PER_SHOT * shots) throw new Error('커피콩이 부족합니다.');
-      if (isMilk && this.milk < CoffeeMachine.MILK_LITER_PER_CUP) throw new Error('우유가 부족합니다.');
-
-      //만들어지는 샷(커피콩)과 우유 사용
-      this.coffeeBeans -= CoffeeMachine.BEANS_GRAM_PER_SHOT * shots;
-      if (isMilk) this.milk -= CoffeeMachine.MILK_LITER_PER_CUP;
-
-      return { shots, hasMilk: isMilk };
-      */
     }
   }
   //실행 테스트
-  const coffeeBrewer: CoffeeMachine = CoffeeMachine.makeCoffeeMachine(70, 2);
+  const coffeeBrewer: CoffeeMachine = CoffeeMachine.makeCoffeeMachine(50, 0);
   const espresso: CoffeeMaker = CoffeeMachine.makeCoffeeMachine(75, 0);
+  coffeeBrewer.fillCoffeeBeans(30);
+  const coffee1 = coffeeBrewer.makeCoffee(3);
+  console.log(coffee1);
+
+  const coffee2 = espresso.makeCoffee(4);
+  console.log(coffee2);
 }
