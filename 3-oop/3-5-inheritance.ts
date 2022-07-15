@@ -1,15 +1,17 @@
 {
   /**
-   * 객체지향적으로 커피기계 만들기(+추상화)☕️
-   * 🌼 추상화란?
-   *  - 정말 필요한 기능만 노출해서 양식을 조금 더 간단하게 만드는 프로세스 자체를 의미
-   *  - 여러 클래스에 걸쳐서 공통적으로 사용되는 함수들의 규격을 정의하는 것
-   * 🌼 추상화 포인트
-   *  - 어떻게 사용할 수 있도록 할 것인가?
-   *  - 무엇을 사용할 수 있도록 할 것인가?
-   * 🌼 추상화 구현 방법
-   * 1. 접근제어자를 사용하여 캡슐화를 통한 추상화 성취
-   * 2. 인터페이스
+   * 객체지향적으로 커피기계 만들기(+상속)☕️
+   * 🌼 상속
+   *  - 공통적인 기능을 재사용하며 자식 클래스에 특화된 기능만 구현하는 것
+   * 🌼 상속의 장점
+   *  - 코드 중복 감소
+   *  - 유지 보수 시간 감소
+   * 🌼 상속이 제한되는 경우
+   *  - 부모 클래스에서 private 접근 제한을 갖는 필드와 메소드
+   * 🌼 메소드 오버라이딩(method overriding)
+   *  - 상속받은 부모 클래스의 메소드를 재정의하여 사용하는 것
+   * 🌼 super
+   *  - 부모클래스의 함수를 호출하거나 접근할 때 사용
    */
 
   //커피 타입
@@ -18,24 +20,19 @@
     hasMilk: boolean;
   };
 
-  //인터페이스 : 사용설명서. 외부에서 사용하는 이름을 고려
+  //인터페이스
   interface CoffeeMaker {
     makeCoffee(shots: number): CoffeeCup;
   }
-  interface CommercialCoffeeMaker {
-    fillCoffeeBeans(coffeeBeans: number): void;
-    makeCoffee(shots: number): CoffeeCup;
-    clean(): void;
-  }
 
-  //커피기계. 구현하는 클래스 ex) CoffeeMakerImpl
-  class CoffeeMachine implements CoffeeMaker, CommercialCoffeeMaker {
+  //커피기계
+  class CoffeeMachine implements CoffeeMaker {
     private static BEANS_GRAM_PER_SHOT = 7; //커피 한잔을 만드는 데 필요한 커피콩(g)
 
     private coffeeBeans: number = 0;
     private milk: number = 0;
 
-    private constructor(coffeeBeans: number, milk: number) {
+    constructor(coffeeBeans: number, milk: number) {
       this.coffeeBeans = coffeeBeans;
       this.milk = milk;
     }
@@ -80,26 +77,29 @@
     }
   }
 
-  class AmateurUser {
-    constructor(private machine: CoffeeMaker) {}
-    makeCoffee() {
-      const coffee = this.machine.makeCoffee(2);
-      console.log(coffee);
+  //🌼 카페라떼 기계. 상속
+  class CaffeLatteMachine extends CoffeeMachine {
+    //🌼 자식 클래스에서 생성자를 구현하는 경우, super()를 호출해야만 한다.
+    //readonly : public으로 보여주는데, 한번 설정 후 바뀌지 않는 경우 사용
+    constructor(beans: number, milk: number, public readonly serialNumber: String) {
+      super(beans, milk);
+    }
+    private steamMilk() {
+      console.log('우유를 데우는 중...🥛');
+    }
+    //커피를 만드는 함수
+    makeCoffee(shots: number): CoffeeCup {
+      //🌼 super
+      const coffee = super.makeCoffee(shots);
+      this.steamMilk();
+      return { ...coffee, hasMilk: true };
     }
   }
-  class ProBarista {
-    constructor(private machine: CommercialCoffeeMaker) {}
-    makeCoffee() {
-      const coffee = this.machine.makeCoffee(2);
-      console.log(coffee);
-      this.machine.fillCoffeeBeans(30);
-      this.machine.clean();
-    }
-  }
+
   //실행 테스트
-  const maker: CoffeeMachine = CoffeeMachine.makeCoffeeMachine(50, 0);
-  const amateur = new AmateurUser(maker);
-  const pro = new ProBarista(maker);
-  amateur.makeCoffee();
-  pro.makeCoffee();
+  const machine = new CoffeeMachine(30, 0);
+  const latteMachine = new CaffeLatteMachine(30, 0, 'SSSSS');
+  const coffee = latteMachine.makeCoffee(1);
+  console.log(coffee);
+  console.log(latteMachine.serialNumber);
 }
